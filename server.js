@@ -7,6 +7,7 @@ app.engine('hbs', hbs());
 app.set('view engine', 'hbs');
 
 app.use(express.static(path.join(__dirname, '/public')));
+app.use(express.multipart());
 
 app.get('/', (req, res) => {
   res.render('index');
@@ -21,15 +22,28 @@ app.get('/about', (req, res) => {
 });
 
 app.get('/contact', (req, res) => {
-  res.render('contact', { layout: 'dark'});
+  res.render('contact');
 });
 
 app.get('/info', (req, res) => {
-  res.render('info');
+  res.render('info', { layout: 'dark'});
 });
 
 app.get('/history', (req, res) => {
   res.render('history');
+});
+
+app.post('/contact/send-message', (req, res) => {
+
+  const { author, sender, title, image, message } = req.body;
+  console.log(req.body)
+  if(author && sender && title && message && image) {
+    res.render('contact', { isSent: true });
+  }
+  else {
+    res.render('contact', { isError: true });
+  }
+
 });
 
 app.use((req, res) => {
