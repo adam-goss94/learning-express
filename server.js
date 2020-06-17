@@ -1,13 +1,15 @@
 const express = require('express');
 const path = require('path');
 const hbs = require('express-handlebars');
+const uploadFile = require('express-fileupload');
 
 const app = express();
 app.engine('hbs', hbs());
 app.set('view engine', 'hbs');
 
 app.use(express.static(path.join(__dirname, '/public')));
-app.use(express.multipart());
+app.use(express.urlencoded({ extended: false }));
+app.use(uploadFile());
 
 app.get('/', (req, res) => {
   res.render('index');
@@ -35,16 +37,22 @@ app.get('/history', (req, res) => {
 
 app.post('/contact/send-message', (req, res) => {
 
-  const { author, sender, title, image, message } = req.body;
-  console.log(req.body)
-  if(author && sender && title && message && image) {
-    res.render('contact', { isSent: true });
+  const { author, sender, title, message } = req.body;
+  const startup_image = req.files.file;
+
+  if(author && sender && title && message && startup_image) {
+    startup_image.mv(__dirname + '/public/' + startup_image.name, function(err) {
+      if(err){
+        console.log(err);
+      }else{
+        console.log("uploaded");
+      }})
+    res.render('contact', {isSent: true, file: startup_image.name});
   }
   else {
-    res.render('contact', { isError: true });
+    res.render('contact', {isError: true})
   }
-
-});
+});;
 
 app.use((req, res) => {
   res.status(404).send('404 not found...');
